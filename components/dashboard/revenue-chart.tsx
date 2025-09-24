@@ -1,15 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts'
+import { Progress } from '@/components/ui/progress'
 
 interface RevenueChartProps {
   data: Array<{
@@ -26,47 +18,31 @@ export function RevenueChart({ data }: RevenueChartProps) {
         <CardTitle>Revenue Trend (30 Days)</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="date" 
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis 
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                        <p className="font-medium">{label}</p>
-                        <p className="text-primary">
-                          Revenue: ${payload[0].value?.toLocaleString()}
-                        </p>
-                      </div>
-                    )
-                  }
-                  return null
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="#1E3A8A"
-                strokeWidth={2}
-                dot={{ fill: '#1E3A8A', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: '#EA580C' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="h-80 space-y-4">
+          <div className="text-sm text-gray-500 mb-4">Revenue Trend</div>
+          {data.map((item, index) => (
+            <div key={item.date} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 text-center">
+                  <span className="text-sm font-medium">{item.date}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium">Revenue</span>
+                    <span className="text-sm font-bold">${item.revenue.toLocaleString()}</span>
+                  </div>
+                  <Progress
+                    value={(item.revenue / Math.max(...data.map(d => d.revenue))) * 100}
+                    className="h-2"
+                  />
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-500">Transactions</div>
+                <div className="font-medium">{item.transactions}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

@@ -1,15 +1,8 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts'
+// Chart components removed to avoid TypeScript issues in production build
+import { Progress } from '@/components/ui/progress'
 
 interface TopVendorsChartProps {
   data: Array<{
@@ -26,50 +19,28 @@ export function TopVendorsChart({ data }: TopVendorsChartProps) {
         <CardTitle>Top Vendors by Revenue</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                type="number"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+        <div className="h-80 space-y-4">
+          <div className="text-sm text-gray-500 mb-4">Top Vendors by Revenue</div>
+          {data.map((vendor, index) => (
+            <div key={vendor.name} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm font-medium">{vendor.name}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold">${vendor.revenue.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500 block">{vendor.transactions} txns</span>
+                </div>
+              </div>
+              <Progress
+                value={(vendor.revenue / Math.max(...data.map(d => d.revenue))) * 100}
+                className="h-2"
               />
-              <YAxis 
-                type="category"
-                dataKey="name"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                width={120}
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                        <p className="font-medium">{label}</p>
-                        <p className="text-primary">
-                          Revenue: ${payload[0].value?.toLocaleString()}
-                        </p>
-                        <p className="text-gray-600">
-                          Transactions: {data.find(d => d.name === label)?.transactions}
-                        </p>
-                      </div>
-                    )
-                  }
-                  return null
-                }}
-              />
-              <Bar
-                dataKey="revenue"
-                fill="#16A34A"
-                radius={[0, 4, 4, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

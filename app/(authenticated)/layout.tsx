@@ -25,10 +25,10 @@ export default function AuthenticatedLayout({
     }
 
     setUser({
-      id: session.user?.id || '',
+      id: session.user?.id || session.user?.email || 'user-1',
       name: session.user?.name || '',
       email: session.user?.email || '',
-      role: (session.user as any)?.role || 'user'
+      role: session.user?.role || 'user'
     })
   }, [session, status, router, setUser])
 

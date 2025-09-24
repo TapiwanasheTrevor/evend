@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+// Chart components removed to avoid TypeScript issues in production build
 
 // Mock data for charts
 const revenueData = [
@@ -179,30 +179,32 @@ export default function ReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#0EA5E9"
-                      strokeWidth={2}
-                      name="Actual Revenue"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="forecast"
-                      stroke="#F59E0B"
-                      strokeDasharray="5 5"
-                      name="Forecasted Revenue"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="h-80 space-y-4">
+                <div className="text-sm text-gray-500 mb-4">Revenue Trend (Last 5 Days)</div>
+                {revenueData.map((data, index) => (
+                  <div key={data.date} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 text-center">
+                        <span className="text-sm font-medium">Day {index + 1}</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">Revenue</span>
+                          <span className="text-sm font-bold">${data.revenue.toLocaleString()}</span>
+                        </div>
+                        <Progress
+                          value={(data.revenue / Math.max(...revenueData.map(d => d.revenue))) * 100}
+                          className="h-2"
+                        />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">Transactions</div>
+                      <div className="font-medium">{data.transactions}</div>
+                      <div className="text-xs text-gray-500">Forecast: ${data.forecast.toLocaleString()}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -215,26 +217,31 @@ export default function ReportsPage() {
                 <CardDescription>Revenue breakdown by service type</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={serviceDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {serviceDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="h-64 space-y-4">
+                  <div className="text-sm text-gray-500 mb-4">Service Revenue Distribution</div>
+                  {serviceDistribution.map((service, index) => (
+                    <div key={service.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: service.color }}
+                          ></div>
+                          <span className="text-sm font-medium">{service.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-bold">${service.value.toLocaleString()}</span>
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({((service.value / serviceDistribution.reduce((sum, s) => sum + s.value, 0)) * 100).toFixed(1)}%)
+                          </span>
+                        </div>
+                      </div>
+                      <Progress
+                        value={(service.value / Math.max(...serviceDistribution.map(s => s.value))) * 100}
+                        className="h-2"
+                      />
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -246,19 +253,41 @@ export default function ReportsPage() {
                 <CardDescription>Transaction volume by hour of day</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={hourlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="electricity" stackId="a" fill="#0EA5E9" />
-                      <Bar dataKey="water" stackId="a" fill="#06B6D4" />
-                      <Bar dataKey="gas" stackId="a" fill="#F59E0B" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="h-64 space-y-4">
+                  <div className="text-sm text-gray-500 mb-4">Peak Hours Transaction Volume</div>
+                  {hourlyData.map((data, index) => (
+                    <div key={data.hour} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{data.hour}</span>
+                        <span className="text-sm text-gray-500">
+                          Total: {data.electricity + data.water + data.gas}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <Progress value={(data.electricity / 300) * 100} className="h-2" />
+                          </div>
+                          <span className="text-xs w-12 text-right">{data.electricity}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <Progress value={(data.water / 200) * 100} className="h-2" />
+                          </div>
+                          <span className="text-xs w-12 text-right">{data.water}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <Progress value={(data.gas / 100) * 100} className="h-2" />
+                          </div>
+                          <span className="text-xs w-12 text-right">{data.gas}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

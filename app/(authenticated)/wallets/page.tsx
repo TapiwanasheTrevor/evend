@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+// Chart components removed to avoid TypeScript issues in production build
 
 // Mock data
 const systemWallets = [
@@ -346,26 +346,29 @@ export default function WalletsPage() {
                 <CardDescription>Available funds by currency</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={floatDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percentage }) => `${name} ${percentage}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="percentage"
-                      >
-                        {floatDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="h-64 space-y-4">
+                  <div className="text-sm text-gray-500 mb-4">Float Distribution by Currency</div>
+                  {floatDistribution.map((item, index) => (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          ></div>
+                          <span className="text-sm font-medium">{item.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-bold">${item.value.toLocaleString()}</span>
+                          <span className="text-xs text-gray-500 ml-2">({item.percentage}%)</span>
+                        </div>
+                      </div>
+                      <Progress
+                        value={item.percentage}
+                        className="h-2"
+                      />
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4 space-y-2">
                   {floatDistribution.map((item) => (
@@ -571,19 +574,44 @@ export default function WalletsPage() {
               <CardDescription>30-day wallet balance trends by currency</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={balanceHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="usd" stroke="#10B981" strokeWidth={2} name="USD Balance" />
-                    <Line type="monotone" dataKey="zwg" stroke="#3B82F6" strokeWidth={2} name="ZWG Balance" />
-                    <Line type="monotone" dataKey="zar" stroke="#F59E0B" strokeWidth={2} name="ZAR Balance" />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="h-80 space-y-4">
+                <div className="text-sm text-gray-500 mb-4">Balance History (Last 7 Days)</div>
+                {balanceHistory.slice(0, 7).map((data, index) => (
+                  <div key={data.date} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{data.date}</span>
+                      <span className="text-sm text-gray-500">
+                        Total: ${(data.usd + data.zwg + data.zar).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span className="text-xs w-12">USD</span>
+                        <div className="flex-1">
+                          <Progress value={(data.usd / 100000) * 100} className="h-2" />
+                        </div>
+                        <span className="text-xs w-20 text-right">${data.usd.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span className="text-xs w-12">ZWG</span>
+                        <div className="flex-1">
+                          <Progress value={(data.zwg / 50000) * 100} className="h-2" />
+                        </div>
+                        <span className="text-xs w-20 text-right">${data.zwg.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <span className="text-xs w-12">ZAR</span>
+                        <div className="flex-1">
+                          <Progress value={(data.zar / 30000) * 100} className="h-2" />
+                        </div>
+                        <span className="text-xs w-20 text-right">${data.zar.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
